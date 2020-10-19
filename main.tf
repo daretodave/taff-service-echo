@@ -7,7 +7,9 @@ terraform {
   }
 }
 
-provider "heroku" {}
+provider "heroku" {
+  version = "~> 2.0"
+}
 
 module "service" {
   source = "git::https://github.com/daretodave/taff-platform//common/strategy/http"
@@ -16,12 +18,44 @@ module "service" {
 
 resource "heroku_app" "edge" {
   name = "taff-echo-edge"
-
+  acm = true
   region = "us"
   organization {
     name = "taff"
   }
 }
+
+resource "heroku_build" "edge-build" {
+  app = heroku_app.edge.name
+  source = {
+    path = "service"
+  }
+}
+
+resource "heroku_formation" "edge-config" {
+  app        = heroku_app.edge.name
+  type       = "web"
+  quantity   = 2
+  size       = "Standard-1x"
+  depends_on = [heroku_build.edge-build]
+}
+
+resource "heroku_app_release" "edge-release" {
+  app = heroku_app.edge.id
+  buildpack_provided_description: "Node",
+  stack = her
+  slug_id = heroku_build.edge-build.slug_id
+}
+
+resource "heroku_formation" "edge-host" {
+  app = heroku_app.edge.id
+  type = "web"
+  quantity = 2
+  size = "standard-1x"
+  depends_on = [
+    heroku_app_release.edge-release]
+}
+
 
 resource "heroku_app" "stage" {
   name = "taff-echo-stage"
@@ -41,28 +75,23 @@ resource "heroku_app" "prod" {
   }
 }
 
+
 resource "heroku_pipeline_coupling" "edge-rule" {
-  app      = heroku_app.edge.name
+  app = heroku_app.edge.name
   pipeline = heroku_pipeline.pipeline.id
-  stage    = "development"
+  stage = "development"
 }
 
 resource "heroku_pipeline_coupling" "stage-rule" {
-  app      = heroku_app.stage.name
+  app = heroku_app.stage.name
   pipeline = heroku_pipeline.pipeline.id
-  stage    = "staging"
+  stage = "staging"
 }
 
 resource "heroku_pipeline_coupling" "prod-rule" {
-  app      = heroku_app.prod.name
+  app = heroku_app.prod.name
   pipeline = heroku_pipeline.pipeline.id
-  stage    = "production"
-}
-
-resource "heroku_team_member" "taff-member" {
-  team  = "my-team"
-  email = "some-user@example.com"
-  role  = "member"
+  stage = "production"
 }
 
 resource "heroku_pipeline" "pipeline" {
