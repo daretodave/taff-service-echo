@@ -59,6 +59,16 @@ resource "heroku_pipeline_coupling" "prod-rule" {
   stage    = "production"
 }
 
+resource "heroku_team_member" "taff-member" {
+  team  = "my-team"
+  email = "some-user@example.com"
+  role  = "member"
+}
+
 resource "heroku_pipeline" "pipeline" {
   name = "taff-service-echo"
+  owner {
+    id = "6a5b3068-3231-41d4-9d95-bdba671ad28f"
+    type = "team"
+  }
 }
