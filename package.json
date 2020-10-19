@@ -1,0 +1,19 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "service/index.js",
+  "repository": "https://github.com/daretodave/taff-service-echo",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "start": "node service/index.js",
+    "test": "node service/test.js"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

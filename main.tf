@@ -42,8 +42,6 @@ resource "heroku_formation" "edge-config" {
 
 resource "heroku_app_release" "edge-release" {
   app = heroku_app.edge.id
-  buildpack_provided_description: "Node",
-  stack = her
   slug_id = heroku_build.edge-build.slug_id
 }
 
